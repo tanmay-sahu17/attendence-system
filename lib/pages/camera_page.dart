@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:camera/camera.dart';
+import 'package:path_provider/path_provider.dart';
 
 class CameraPage extends StatefulWidget {
   const CameraPage({super.key});
@@ -12,9 +14,6 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
   CameraController? _controller;
-  bool _isRecording = false;
-  int _recordingTime = 0;
-  Timer? _timer;
   bool _flashEnabled = false;
   bool _isInitialized = false;
   
@@ -24,13 +23,18 @@ class _CameraPageState extends State<CameraPage> {
   String? _lectureNumber;
   final _lectureNumberController = TextEditingController();
 
+  // Photo capture
+  List<String> _capturedPhotos = [];
+  final int _requiredPhotos = 30;
+  bool _isCapturing = false;
+
   @override
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
   }
   
-  void _proceedToRecording() {
+  void _proceedToCamera() {
     if (_selectedDate == null || _lectureNumber == null || _lectureNumber!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select date and enter lecture number')),
@@ -51,7 +55,7 @@ class _CameraPageState extends State<CameraPage> {
       _controller = CameraController(
         cameras.first,
         ResolutionPreset.high,
-        enableAudio: true,
+        enableAudio: false,
       );
 
       await _controller!.initialize();
@@ -67,62 +71,133 @@ class _CameraPageState extends State<CameraPage> {
 
   @override
   void dispose() {
-    _timer?.cancel();
     _controller?.dispose();
     _lectureNumberController.dispose();
     super.dispose();
   }
 
-  void _startRecording() async {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-
-    try {
-      await _controller!.startVideoRecording();
-      setState(() {
-        _isRecording = true;
-        _recordingTime = 0;
-      });
-
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        setState(() {
-          _recordingTime++;
-        });
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recording started')),
-      );
-    } catch (e) {
-      debugPrint('Error starting recording: $e');
+  Future<void> _capturePhoto() async {
+    if (_controller == null || !_controller!.value.isInitialized || _isCapturing) return;
+    if (_capturedPhotos.length >= _requiredPhotos) {
+      _showSubmitDialog();
+      return;
     }
-  }
 
-  void _stopRecording() async {
-    if (_controller == null || !_controller!.value.isRecordingVideo) return;
+    setState(() {
+      _isCapturing = true;
+    });
 
     try {
-      await _controller!.stopVideoRecording();
-      _timer?.cancel();
+      final directory = await getTemporaryDirectory();
+      final path = '${directory.path}/attendance_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      
+      final image = await _controller!.takePicture();
+      await File(image.path).copy(path);
+      
       setState(() {
-        _isRecording = false;
+        _capturedPhotos.add(path);
+        _isCapturing = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recording stopped')),
-      );
-
-      if (mounted) {
-        context.push('/processing');
+      if (_capturedPhotos.length >= _requiredPhotos) {
+        // Auto-show submit dialog when all 30 photos are captured
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _showSubmitDialog();
+          }
+        });
       }
     } catch (e) {
-      debugPrint('Error stopping recording: $e');
+      debugPrint('Error capturing photo: $e');
+      setState(() {
+        _isCapturing = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error capturing photo: $e')),
+        );
+      }
     }
   }
 
-  String _formatTime(int seconds) {
-    final mins = seconds ~/ 60;
-    final secs = seconds % 60;
-    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  void _showSubmitDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'All Photos Captured!',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2B3544),
+          ),
+        ),
+        content: Text(
+          'You have captured all $_requiredPhotos photos. Ready to submit for processing?',
+          style: const TextStyle(color: Color(0xFF7D8897)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF7D8897))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.push('/processing');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1A4FB8),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _attemptSubmit() {
+    final remaining = _requiredPhotos - _capturedPhotos.length;
+    if (remaining > 0) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Color(0xFFE84545)),
+              SizedBox(width: 8),
+              Text(
+                'Incomplete',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2B3544),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Please capture the remaining $remaining photo${remaining > 1 ? 's' : ''} before submitting for processing.',
+            style: const TextStyle(color: Color(0xFF7D8897)),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1A4FB8),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Continue Capturing'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      context.push('/processing');
+    }
   }
 
   @override
@@ -375,10 +450,10 @@ class _CameraPageState extends State<CameraPage> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      _proceedToRecording();
+                      _proceedToCamera();
                     },
-                    icon: const Icon(Icons.videocam, size: 20),
-                    label: const Text('Record Video'),
+                    icon: const Icon(Icons.camera_alt, size: 20),
+                    label: const Text('Capture Photos'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF1A4FB8),
                       side: const BorderSide(color: Color(0xFF1A4FB8), width: 2),
@@ -401,8 +476,8 @@ class _CameraPageState extends State<CameraPage> {
                       }
                       context.push('/upload');
                     },
-                    icon: const Icon(Icons.cloud_upload, size: 20),
-                    label: const Text('Upload Video'),
+                    icon: const Icon(Icons.upload, size: 20),
+                    label: const Text('Upload Photos'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1A4FB8),
                       foregroundColor: Colors.white,
@@ -477,82 +552,72 @@ class _CameraPageState extends State<CameraPage> {
                           ),
                         ),
 
-                      // Recording Overlay
-                      if (_isRecording)
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: const Color(0xFF00BFFF).withOpacity(0.5),
-                              width: 2,
+                      // Photo Progress Indicator
+                      Positioned(
+                        top: 16,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
                             ),
-                          ),
-                          child: Column(
-                            children: [
-                              const Spacer(),
-                              Container(
-                                height: 2,
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.transparent,
-                                      Color(0xFF00BFFF),
-                                      Colors.transparent,
-                                    ],
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: _capturedPhotos.length >= _requiredPhotos
+                                    ? [const Color(0xFF33CC66), const Color(0xFF2DB55D)]
+                                    : [const Color(0xFF1A4FB8), const Color(0xFF00BFFF)],
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 12,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _capturedPhotos.length >= _requiredPhotos
+                                      ? Icons.check_circle
+                                      : Icons.camera,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${_capturedPhotos.length} / $_requiredPhotos',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                              const Spacer(),
-                            ],
-                          ),
-                        ),
-
-                      // Recording Indicator
-                      if (_isRecording)
-                        Positioned(
-                          top: 16,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE84545),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 8,
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _formatTime(_recordingTime),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              ],
                             ),
                           ),
                         ),
+                      ),
+
+                      // Progress Bar at Bottom
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: LinearProgressIndicator(
+                          value: _capturedPhotos.length / _requiredPhotos,
+                          backgroundColor: Colors.black.withOpacity(0.3),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _capturedPhotos.length >= _requiredPhotos
+                                ? const Color(0xFF33CC66)
+                                : const Color(0xFF00BFFF),
+                          ),
+                          minHeight: 4,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -621,53 +686,103 @@ class _CameraPageState extends State<CameraPage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Record Button
-                GestureDetector(
-                  onTap: _isRecording ? _stopRecording : _startRecording,
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE84545),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFE84545).withOpacity(0.3),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: _isRecording
-                          ? Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            )
-                          : Container(
-                              width: 32,
-                              height: 32,
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
+                // Capture Button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Capture Photo Button
+                    GestureDetector(
+                      onTap: _isCapturing ? null : _capturePhoto,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: _capturedPhotos.length >= _requiredPhotos
+                                ? [const Color(0xFF33CC66), const Color(0xFF2DB55D)]
+                                : [const Color(0xFF1A4FB8), const Color(0xFF00BFFF)],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: (_capturedPhotos.length >= _requiredPhotos
+                                      ? const Color(0xFF33CC66)
+                                      : const Color(0xFF1A4FB8))
+                                  .withOpacity(0.4),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
                             ),
+                          ],
+                        ),
+                        child: Center(
+                          child: _isCapturing
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                )
+                              : Icon(
+                                  _capturedPhotos.length >= _requiredPhotos
+                                      ? Icons.check_circle
+                                      : Icons.camera,
+                                  size: 40,
+                                  color: Colors.white,
+                                ),
+                        ),
+                      ),
                     ),
-                  ),
+                    if (_capturedPhotos.isNotEmpty) ...[
+                      const SizedBox(width: 24),
+                      // Submit Button
+                      GestureDetector(
+                        onTap: _attemptSubmit,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          decoration: BoxDecoration(
+                            color: _capturedPhotos.length >= _requiredPhotos
+                                ? const Color(0xFF1A4FB8)
+                                : const Color(0xFF7D8897),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (_capturedPhotos.length >= _requiredPhotos
+                                        ? const Color(0xFF1A4FB8)
+                                        : const Color(0xFF7D8897))
+                                    .withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check, color: Colors.white, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Submit',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _isRecording
-                      ? 'Tap to stop recording'
-                      : 'Tap to start recording',
+                  _capturedPhotos.length >= _requiredPhotos
+                      ? 'All photos captured! Tap Submit to proceed'
+                      : 'Tap to capture photo (${_capturedPhotos.length}/$_requiredPhotos)',
                   style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF7D8897),
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),

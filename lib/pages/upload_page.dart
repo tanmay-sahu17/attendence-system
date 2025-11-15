@@ -2,17 +2,94 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-class UploadPage extends StatelessWidget {
+class UploadPage extends StatefulWidget {
   const UploadPage({super.key});
 
-  Future<void> _pickVideo(BuildContext context) async {
-    final picker = ImagePicker();
-    final video = await picker.pickVideo(source: ImageSource.gallery);
+  @override
+  State<UploadPage> createState() => _UploadPageState();
+}
 
-    if (video != null && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Video selected')),
+class _UploadPageState extends State<UploadPage> {
+  final List<XFile> _selectedPhotos = [];
+  final int _requiredPhotos = 30;
+  bool _isLoading = false;
+
+  Future<void> _pickPhotos(BuildContext context) async {
+    final picker = ImagePicker();
+    
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final photos = await picker.pickMultiImage();
+      
+      if (photos.isNotEmpty && context.mounted) {
+        setState(() {
+          _selectedPhotos.addAll(photos);
+          _isLoading = false;
+        });
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${photos.length} photo(s) selected')),
+          );
+        }
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error selecting photos: $e')),
+        );
+      }
+    }
+  }
+
+  void _submit(BuildContext context) {
+    final remaining = _requiredPhotos - _selectedPhotos.length;
+    if (remaining > 0) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Color(0xFFE84545)),
+              SizedBox(width: 8),
+              Text(
+                'Incomplete',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2B3544),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Please select the remaining $remaining photo${remaining > 1 ? 's' : ''} before submitting for processing.',
+            style: const TextStyle(color: Color(0xFF7D8897)),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1A4FB8),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Continue Selecting'),
+            ),
+          ],
+        ),
       );
+    } else {
       context.push('/processing');
     }
   }
@@ -29,7 +106,7 @@ class UploadPage extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
         title: const Text(
-          'Upload Video',
+          'Upload Photos',
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color: Colors.white,
@@ -39,41 +116,45 @@ class UploadPage extends StatelessWidget {
       body: Container(
         color: const Color(0xFFF7F9FB),
         child: Center(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(32),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFF00BFFF),
-                        Color(0xFF22D3EE),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(60),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF00BFFF).withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Circular Progress Indicator
+                    if (_selectedPhotos.isNotEmpty)
+                      SizedBox(
+                        width: 100,
+                        height: 100,
+                        child: CircularProgressIndicator(
+                          value: _selectedPhotos.length / _requiredPhotos,
+                          strokeWidth: 6,
+                          backgroundColor: const Color(0xFFD9DCE3),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _selectedPhotos.length >= _requiredPhotos
+                                ? const Color(0xFF33CC66)
+                                : const Color(0xFF1A4FB8),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.cloud_upload,
-                    size: 60,
-                    color: Colors.white,
-                  ),
+                    // Icon
+                    Icon(
+                      _selectedPhotos.length >= _requiredPhotos
+                          ? Icons.check_circle
+                          : Icons.cloud_upload,
+                      size: 60,
+                      color: _selectedPhotos.length >= _requiredPhotos
+                          ? const Color(0xFF33CC66)
+                          : const Color(0xFF1A4FB8),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 32),
                 const Text(
-                  'Upload Attendance Video',
+                  'Upload Attendance Photos',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -82,36 +163,120 @@ class UploadPage extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Select a pre-recorded video from your gallery to process attendance',
-                  style: TextStyle(
+                Text(
+                  _selectedPhotos.isEmpty
+                      ? 'Select 30 photos from your gallery to process attendance'
+                      : '${_selectedPhotos.length} / $_requiredPhotos photos selected',
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF7D8897),
                   ),
                   textAlign: TextAlign.center,
                 ),
+                
                 const SizedBox(height: 48),
+                
+                // Select Photos Button
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => _pickVideo(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A4FB8),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF1A4FB8).withOpacity(0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    child: const Text(
-                      'Choose Video',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    child: ElevatedButton.icon(
+                      onPressed: _isLoading ? null : () => _pickPhotos(context),
+                      icon: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Color(0xFF1A4FB8),
+                              ),
+                            )
+                          : const Icon(Icons.photo_library, size: 20),
+                      label: Text(
+                        _selectedPhotos.isEmpty ? 'Select Photos' : 'Add More Photos',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF7D8897),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
                       ),
                     ),
                   ),
                 ),
+                
+                if (_selectedPhotos.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  // Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (_selectedPhotos.length >= _requiredPhotos
+                                ? const Color(0xFF33CC66)
+                                : const Color(0xFF7D8897)).withOpacity(0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton.icon(
+                        onPressed: () => _submit(context),
+                        icon: const Icon(Icons.check_circle, size: 20),
+                        label: const Text(
+                          'Submit for Processing',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF7D8897),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Clear Button
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _selectedPhotos.clear();
+                      });
+                    },
+                    icon: const Icon(Icons.clear, size: 18),
+                    label: const Text('Clear All'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFE84545),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

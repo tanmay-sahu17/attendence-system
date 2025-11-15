@@ -39,45 +39,59 @@ class ResultsPage extends StatelessWidget {
         color: const Color(0xFFF7F9FB),
         child: Column(
           children: [
-          // Summary Card with enhanced design
+          // Summary Card
           Container(
             margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(28),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF1A4FB8),
-                  Color(0xFF00BFFF),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF1A4FB8).withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
             child: Column(
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      Icons.analytics,
-                      color: Colors.white,
-                      size: 24,
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: Color(0xFF7D8897),
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Nov 15, 2025',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF7D8897),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Session Summary',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A4FB8).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Lecture #5',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A4FB8),
+                        ),
                       ),
                     ),
                   ],
@@ -90,26 +104,29 @@ class ResultsPage extends StatelessWidget {
                       icon: Icons.check_circle_outline,
                       label: 'Present',
                       value: '$presentCount',
+                      color: const Color(0xFF33CC66),
                     ),
                     Container(
                       width: 1,
-                      height: 60,
-                      color: Colors.white.withOpacity(0.3),
+                      height: 50,
+                      color: const Color(0xFFD9DCE3),
                     ),
                     _SummaryItem(
                       icon: Icons.cancel_outlined,
                       label: 'Absent',
                       value: '${totalCount - presentCount}',
+                      color: const Color(0xFFE84545),
                     ),
                     Container(
                       width: 1,
-                      height: 60,
-                      color: Colors.white.withOpacity(0.3),
+                      height: 50,
+                      color: const Color(0xFFD9DCE3),
                     ),
                     _SummaryItem(
-                      icon: Icons.show_chart,
+                      icon: Icons.percent,
                       label: 'Rate',
                       value: '$percentage%',
+                      color: const Color(0xFF1A4FB8),
                     ),
                   ],
                 ),
@@ -150,7 +167,7 @@ class ResultsPage extends StatelessWidget {
             ),
           ),
 
-          // Students List with enhanced cards
+          // Students List
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -161,165 +178,104 @@ class ResultsPage extends StatelessWidget {
                 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isPresent 
-                        ? const Color(0xFF33CC66).withOpacity(0.3)
-                        : const Color(0xFFE84545).withOpacity(0.3),
-                      width: 1.5,
-                    ),
+                    borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
+                        color: Colors.black.withOpacity(0.04),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        // Avatar with enhanced styling
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isPresent
-                                  ? [
-                                      const Color(0xFF33CC66).withOpacity(0.2),
-                                      const Color(0xFF33CC66).withOpacity(0.1),
-                                    ]
-                                  : [
-                                      const Color(0xFFE84545).withOpacity(0.2),
-                                      const Color(0xFFE84545).withOpacity(0.1),
-                                    ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                  child: Row(
+                    children: [
+                      // Avatar
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF7F9FB),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            student['rollNo'] as String,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2B3544),
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Icon(
-                            isPresent ? Icons.person : Icons.person_off,
-                            color: isPresent
-                                ? const Color(0xFF33CC66)
-                                : const Color(0xFFE84545),
-                            size: 28,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        // Student Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                student['name'] as String,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF2B3544),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.badge,
-                                    size: 14,
-                                    color: Color(0xFF7D8897),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Roll No: ${student['rollNo']}',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Color(0xFF7D8897),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Status Badge
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                      ),
+                      const SizedBox(width: 12),
+                      // Student Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: isPresent
-                                      ? [
-                                          const Color(0xFF33CC66),
-                                          const Color(0xFF2DB55D),
-                                        ]
-                                      : [
-                                          const Color(0xFFE84545),
-                                          const Color(0xFFD63939),
-                                        ],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isPresent
-                                            ? const Color(0xFF33CC66)
-                                            : const Color(0xFFE84545))
-                                        .withOpacity(0.3),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                student['status'] as String,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.5,
-                                ),
+                            Text(
+                              student['name'] as String,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF2B3544),
                               ),
                             ),
                             if (isPresent) ...[
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.verified,
-                                    size: 14,
-                                    color: Color(0xFF33CC66),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${student['confidence']}% match',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF33CC66),
-                                    ),
-                                  ),
-                                ],
+                              const SizedBox(height: 2),
+                              Text(
+                                '${student['confidence']}% confidence',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF7D8897),
+                                ),
                               ),
                             ],
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      // Status
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (isPresent
+                                  ? const Color(0xFF33CC66)
+                                  : const Color(0xFFE84545)).withOpacity(0.2),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          student['status'] as String,
+                          style: TextStyle(
+                            color: isPresent
+                                ? const Color(0xFF33CC66)
+                                : const Color(0xFFE84545),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
             ),
           ),
 
-          // Enhanced Action Buttons
+          // Action Buttons
           SafeArea(
             child: Container(
               padding: const EdgeInsets.all(16),
@@ -327,8 +283,8 @@ class ResultsPage extends StatelessWidget {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
                     offset: const Offset(0, -2),
                   ),
                 ],
@@ -336,36 +292,61 @@ class ResultsPage extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.download, size: 20),
-                      label: const Text('Export'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF1A4FB8),
-                        side: const BorderSide(color: Color(0xFF1A4FB8), width: 2),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1A4FB8).withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: OutlinedButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.download, size: 18),
+                        label: const Text('Export'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF1A4FB8),
+                          backgroundColor: Colors.white,
+                          side: BorderSide.none,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        context.go('/');
-                      },
-                      icon: const Icon(Icons.check_circle, size: 20),
-                      label: const Text('Done'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A4FB8),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1A4FB8).withOpacity(0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          context.go('/');
+                        },
+                        icon: const Icon(Icons.check, size: 18),
+                        label: const Text('Done'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF1A4FB8),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
                         ),
-                        elevation: 2,
                       ),
                     ),
                   ),
@@ -384,46 +365,39 @@ class _SummaryItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final Color color;
 
   const _SummaryItem({
     required this.icon,
     required this.label,
     required this.value,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 28,
-          ),
+        Icon(
+          icon,
+          color: color,
+          size: 28,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 28,
+          style: TextStyle(
+            color: color,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
-            letterSpacing: 0.5,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.9),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+          style: const TextStyle(
+            color: Color(0xFF7D8897),
+            fontSize: 12,
           ),
         ),
       ],
