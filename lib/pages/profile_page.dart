@@ -137,11 +137,14 @@ class ProfilePage extends StatelessWidget {
               // Logout Button
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: OutlinedButton(
                   onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE84545),
-                    foregroundColor: Colors.white,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFE84545),
+                    side: const BorderSide(
+                      color: Color(0xFFE84545),
+                      width: 2,
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -152,7 +155,7 @@ class ProfilePage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: Color(0xFFE84545),
                     ),
                   ),
                 ),
@@ -161,7 +164,6 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const BottomNav(),
     );
   }
 }

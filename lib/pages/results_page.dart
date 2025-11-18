@@ -1,19 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class ResultsPage extends StatelessWidget {
+class ResultsPage extends StatefulWidget {
   const ResultsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final students = [
+  State<ResultsPage> createState() => _ResultsPageState();
+}
+
+class _ResultsPageState extends State<ResultsPage> {
+  late List<Map<String, dynamic>> students;
+
+  @override
+  void initState() {
+    super.initState();
+    students = [
       {'name': 'John Doe', 'rollNo': '001', 'status': 'Present', 'confidence': 98},
       {'name': 'Jane Smith', 'rollNo': '002', 'status': 'Present', 'confidence': 96},
       {'name': 'Mike Johnson', 'rollNo': '003', 'status': 'Absent', 'confidence': 0},
       {'name': 'Sarah Williams', 'rollNo': '004', 'status': 'Present', 'confidence': 99},
       {'name': 'Tom Brown', 'rollNo': '005', 'status': 'Present', 'confidence': 94},
     ];
+  }
 
+  void _toggleAttendance(int index) {
+    setState(() {
+      final currentStatus = students[index]['status'];
+      students[index]['status'] = currentStatus == 'Present' ? 'Absent' : 'Present';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final presentCount = students.where((s) => s['status'] == 'Present').length;
     final totalCount = students.length;
     final percentage = ((presentCount / totalCount) * 100).round();
@@ -104,7 +122,7 @@ class ResultsPage extends StatelessWidget {
                       icon: Icons.check_circle_outline,
                       label: 'Present',
                       value: '$presentCount',
-                      color: const Color(0xFF33CC66),
+                      color: const Color(0xFF28A745),
                     ),
                     Container(
                       width: 1,
@@ -238,33 +256,50 @@ class ResultsPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // Status
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isPresent
-                                  ? const Color(0xFF33CC66)
-                                  : const Color(0xFFE84545)).withOpacity(0.2),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
+                      // Tap Chip to Change Status
+                      InkWell(
+                        onTap: () => _toggleAttendance(index),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isPresent
+                                  ? [const Color(0xFF28A745), const Color(0xFF1E7E34)]
+                                  : [const Color(0xFFE84545), const Color(0xFFD63031)],
                             ),
-                          ],
-                        ),
-                        child: Text(
-                          student['status'] as String,
-                          style: TextStyle(
-                            color: isPresent
-                                ? const Color(0xFF33CC66)
-                                : const Color(0xFFE84545),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (isPresent
+                                    ? const Color(0xFF28A745)
+                                    : const Color(0xFFE84545)).withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isPresent ? Icons.check_circle : Icons.cancel,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isPresent ? 'Present' : 'Absent',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

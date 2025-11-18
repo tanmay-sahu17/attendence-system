@@ -44,12 +44,6 @@ class BottomNav extends StatelessWidget {
                 isActive: currentRoute == '/records',
               ),
               _NavItem(
-                icon: Icons.settings,
-                label: 'Settings',
-                path: '/settings',
-                isActive: currentRoute == '/settings',
-              ),
-              _NavItem(
                 icon: Icons.person,
                 label: 'Profile',
                 path: '/profile',

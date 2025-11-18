@@ -11,7 +11,7 @@ class UploadPage extends StatefulWidget {
 
 class _UploadPageState extends State<UploadPage> {
   final List<XFile> _selectedPhotos = [];
-  final int _requiredPhotos = 30;
+  final int _requiredPhotos = 10;
   bool _isLoading = false;
 
   Future<void> _pickPhotos(BuildContext context) async {
@@ -135,8 +135,8 @@ class _UploadPageState extends State<UploadPage> {
                           backgroundColor: const Color(0xFFD9DCE3),
                           valueColor: AlwaysStoppedAnimation<Color>(
                             _selectedPhotos.length >= _requiredPhotos
-                                ? const Color(0xFF33CC66)
-                                : const Color(0xFF1A4FB8),
+                                ? const Color(0xFF28A745)
+                                : const Color(0xFF00BFFF),
                           ),
                         ),
                       ),
@@ -147,8 +147,8 @@ class _UploadPageState extends State<UploadPage> {
                           : Icons.cloud_upload,
                       size: 60,
                       color: _selectedPhotos.length >= _requiredPhotos
-                          ? const Color(0xFF33CC66)
-                          : const Color(0xFF1A4FB8),
+                          ? const Color(0xFF28A745)
+                          : const Color(0xFF7D8897),
                     ),
                   ],
                 ),
@@ -165,7 +165,7 @@ class _UploadPageState extends State<UploadPage> {
                 const SizedBox(height: 12),
                 Text(
                   _selectedPhotos.isEmpty
-                      ? 'Select 30 photos from your gallery to process attendance'
+                      ? 'Select 10 photos from your gallery to process attendance'
                       : '${_selectedPhotos.length} / $_requiredPhotos photos selected',
                   style: const TextStyle(
                     fontSize: 14,
@@ -233,7 +233,7 @@ class _UploadPageState extends State<UploadPage> {
                         boxShadow: [
                           BoxShadow(
                             color: (_selectedPhotos.length >= _requiredPhotos
-                                ? const Color(0xFF33CC66)
+                                ? const Color(0xFF28A745)
                                 : const Color(0xFF7D8897)).withOpacity(0.25),
                             blurRadius: 10,
                             offset: const Offset(0, 3),

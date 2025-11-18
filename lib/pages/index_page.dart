@@ -11,7 +11,6 @@ class IndexPage extends StatelessWidget {
     return const Scaffold(
       appBar: TopBar(),
       body: Dashboard(),
-      bottomNavigationBar: BottomNav(),
     );
   }
 }

@@ -101,13 +101,13 @@ class RecordsPage extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF33CC66).withOpacity(0.1),
+                        color: const Color(0xFF28A745).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         '${record['percentage']}%',
                         style: const TextStyle(
-                          color: Color(0xFF33CC66),
+                          color: Color(0xFF28A745),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),

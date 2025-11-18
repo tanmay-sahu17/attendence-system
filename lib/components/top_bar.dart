@@ -68,6 +68,12 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
             // TODO: Implement notifications
           },
         ),
+        IconButton(
+          icon: const Icon(Icons.person, color: Colors.white),
+          onPressed: () {
+            context.push('/profile');
+          },
+        ),
         const SizedBox(width: 8),
       ],
     );
