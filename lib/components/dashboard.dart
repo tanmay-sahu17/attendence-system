@@ -105,7 +105,7 @@ class _DashboardState extends State<Dashboard> {
               title: 'Record Attendance',
               description: 'Start camera to capture students',
               gradientColors: const [Color(0xFF0A192F), Color(0xFF1E3A5F)],
-              onTap: () => context.push('/camera'),
+              onTap: () {}, // Navigation disabled
             ),
             
             const SizedBox(height: 24),
