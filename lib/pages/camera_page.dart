@@ -60,8 +60,9 @@ class _CameraPageState extends State<CameraPage> {
 
       _controller = CameraController(
         cameras.first,
-        ResolutionPreset.high,
+        ResolutionPreset.medium, // Changed from high to medium to reduce buffer usage
         enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg, // Specify JPEG format
       );
 
       await _controller!.initialize();
@@ -81,10 +82,18 @@ class _CameraPageState extends State<CameraPage> {
 
   @override
   void dispose() {
+    // Properly dispose camera controller
     _controller?.dispose();
     _subjectNameController.dispose();
     _lectureNumberController.dispose();
     super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    // Pause camera when widget is deactivated
+    _controller?.pausePreview();
+    super.deactivate();
   }
 
   Future<void> _capturePhoto() async {
@@ -99,11 +108,23 @@ class _CameraPageState extends State<CameraPage> {
     });
 
     try {
+      // Add small delay to allow camera buffer to clear
+      await Future.delayed(const Duration(milliseconds: 100));
+      
       final directory = await getTemporaryDirectory();
       final path = '${directory.path}/attendance_${DateTime.now().millisecondsSinceEpoch}.jpg';
       
       final image = await _controller!.takePicture();
+      
+      // Copy file and add small delay before next capture
       await File(image.path).copy(path);
+      
+      // Delete original temp file to free memory
+      try {
+        await File(image.path).delete();
+      } catch (e) {
+        debugPrint('Error deleting temp file: $e');
+      }
       
       setState(() {
         _capturedPhotos.add(path);
@@ -158,7 +179,7 @@ class _CameraPageState extends State<CameraPage> {
               context.push('/processing');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1A4FB8),
+              backgroundColor: const Color(0xFF0A192F),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
@@ -197,7 +218,7 @@ class _CameraPageState extends State<CameraPage> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1A4FB8),
+                backgroundColor: const Color(0xFF0A192F),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
@@ -215,7 +236,7 @@ class _CameraPageState extends State<CameraPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A4FB8),
+        backgroundColor: const Color(0xFF0A192F),
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -236,7 +257,7 @@ class _CameraPageState extends State<CameraPage> {
 
   Widget _buildLectureForm() {
     return Container(
-      color: const Color(0xFFF7F9FB),
+      color: const Color(0xFFF0F4F8),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -244,13 +265,17 @@ class _CameraPageState extends State<CameraPage> {
           children: [
             // Header
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF1A4FB8),
-                borderRadius: BorderRadius.circular(20),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0A192F), Color(0xFF1E3A5F)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF1A4FB8).withOpacity(0.3),
+                    color: const Color(0xFF0A192F).withOpacity(0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -260,30 +285,30 @@ class _CameraPageState extends State<CameraPage> {
                 children: [
                   Icon(
                     Icons.calendar_today,
-                    size: 48,
+                    size: 32,
                     color: Colors.white,
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 12),
                   Text(
                     'Set Lecture Details',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: 4),
                   Text(
                     'Enter the date and lecture number',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: Colors.white70,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // Lecture Details Card
             Container(
@@ -324,7 +349,7 @@ class _CameraPageState extends State<CameraPage> {
                         ),
                         prefixIcon: const Icon(
                           Icons.book,
-                          color: Color(0xFF1A4FB8),
+                          color: Color(0xFF0A192F),
                           size: 20,
                         ),
                         filled: true,
@@ -346,7 +371,7 @@ class _CameraPageState extends State<CameraPage> {
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: Color(0xFF1A4FB8),
+                            color: Color(0xFF0A192F),
                             width: 2,
                           ),
                         ),
@@ -387,7 +412,7 @@ class _CameraPageState extends State<CameraPage> {
                         ),
                         prefixIcon: const Icon(
                           Icons.numbers,
-                          color: Color(0xFF1A4FB8),
+                          color: Color(0xFF0A192F),
                           size: 20,
                         ),
                         filled: true,
@@ -409,7 +434,7 @@ class _CameraPageState extends State<CameraPage> {
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: Color(0xFF1A4FB8),
+                            color: Color(0xFF0A192F),
                             width: 2,
                           ),
                         ),
@@ -452,7 +477,7 @@ class _CameraPageState extends State<CameraPage> {
                             return Theme(
                               data: Theme.of(context).copyWith(
                                 colorScheme: const ColorScheme.light(
-                                  primary: Color(0xFF1A4FB8),
+                                  primary: Color(0xFF0A192F),
                                   onPrimary: Colors.white,
                                   onSurface: Color(0xFF2B3544),
                                 ),
@@ -481,7 +506,7 @@ class _CameraPageState extends State<CameraPage> {
                           children: [
                             const Icon(
                               Icons.calendar_today,
-                              color: Color(0xFF1A4FB8),
+                              color: Color(0xFFFFC107),
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -526,7 +551,7 @@ class _CameraPageState extends State<CameraPage> {
                             return Theme(
                               data: Theme.of(context).copyWith(
                                 colorScheme: const ColorScheme.light(
-                                  primary: Color(0xFF1A4FB8),
+                                  primary: Color(0xFF0A192F),
                                   onPrimary: Colors.white,
                                   onSurface: Color(0xFF2B3544),
                                 ),
@@ -555,7 +580,7 @@ class _CameraPageState extends State<CameraPage> {
                           children: [
                             const Icon(
                               Icons.access_time,
-                              color: Color(0xFF1A4FB8),
+                              color: Color(0xFFFFC107),
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -622,7 +647,7 @@ class _CameraPageState extends State<CameraPage> {
                     icon: const Icon(Icons.upload, size: 20),
                     label: const Text('Upload Photos'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A4FB8),
+                      backgroundColor: const Color(0xFF0A192F),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
@@ -685,8 +710,8 @@ class _CameraPageState extends State<CameraPage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: _capturedPhotos.length >= _requiredPhotos
-                      ? [const Color(0xFF28A745), const Color(0xFF1E7E34)]
-                      : [const Color(0xFF1A4FB8), const Color(0xFF00BFFF)],
+                      ? [const Color(0xFF4CAF50), const Color(0xFF388E3C)]
+                      : [const Color(0xFF0A192F), const Color(0xFF1E3A5F)],
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
@@ -731,8 +756,8 @@ class _CameraPageState extends State<CameraPage> {
             backgroundColor: Colors.black.withOpacity(0.3),
             valueColor: AlwaysStoppedAnimation<Color>(
               _capturedPhotos.length >= _requiredPhotos
-                  ? const Color(0xFF28A745)
-                  : const Color(0xFF00BFFF),
+                  ? const Color(0xFF4CAF50)
+                  : const Color(0xFFFFC107),
             ),
             minHeight: 6,
           ),
@@ -760,7 +785,7 @@ class _CameraPageState extends State<CameraPage> {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: _flashEnabled
-                      ? const Color(0xFF00BFFF)
+                      ? const Color(0xFFFFC107)
                       : Colors.white.withOpacity(0.3),
                   width: 2,
                 ),
@@ -773,7 +798,7 @@ class _CameraPageState extends State<CameraPage> {
               ),
               child: Icon(
                 _flashEnabled ? Icons.flash_on : Icons.flash_off,
-                color: _flashEnabled ? const Color(0xFF00BFFF) : Colors.white,
+                color: _flashEnabled ? const Color(0xFFFFC107) : Colors.white,
                 size: 28,
               ),
             ),
@@ -819,8 +844,8 @@ class _CameraPageState extends State<CameraPage> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: _capturedPhotos.length >= _requiredPhotos
-                                ? [const Color(0xFF28A745), const Color(0xFF1E7E34)]
-                                : [const Color(0xFF1A4FB8), const Color(0xFF00BFFF)],
+                                ? [const Color(0xFF4CAF50), const Color(0xFF388E3C)]
+                                : [const Color(0xFF0A192F), const Color(0xFF1E3A5F)],
                           ),
                           shape: BoxShape.circle,
                           border: Border.all(
@@ -830,8 +855,8 @@ class _CameraPageState extends State<CameraPage> {
                           boxShadow: [
                             BoxShadow(
                               color: (_capturedPhotos.length >= _requiredPhotos
-                                      ? const Color(0xFF28A745)
-                                      : const Color(0xFF1A4FB8))
+                                      ? const Color(0xFF4CAF50)
+                                      : const Color(0xFF0A192F))
                                   .withOpacity(0.5),
                               blurRadius: 20,
                               offset: const Offset(0, 4),
@@ -863,7 +888,7 @@ class _CameraPageState extends State<CameraPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                           decoration: BoxDecoration(
                             color: _capturedPhotos.length >= _requiredPhotos
-                                ? const Color(0xFF1A4FB8)
+                                ? const Color(0xFFFFC107)
                                 : const Color(0xFF7D8897).withOpacity(0.8),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(

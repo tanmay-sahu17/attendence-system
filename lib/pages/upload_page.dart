@@ -80,7 +80,7 @@ class _UploadPageState extends State<UploadPage> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1A4FB8),
+                backgroundColor: const Color(0xFF0A192F),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
@@ -98,7 +98,7 @@ class _UploadPageState extends State<UploadPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A4FB8),
+        backgroundColor: const Color(0xFF0A192F),
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -114,7 +114,7 @@ class _UploadPageState extends State<UploadPage> {
         ),
       ),
       body: Container(
-        color: const Color(0xFFF7F9FB),
+        color: const Color(0xFFF0F4F8),
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(32),
@@ -135,8 +135,8 @@ class _UploadPageState extends State<UploadPage> {
                           backgroundColor: const Color(0xFFD9DCE3),
                           valueColor: AlwaysStoppedAnimation<Color>(
                             _selectedPhotos.length >= _requiredPhotos
-                                ? const Color(0xFF28A745)
-                                : const Color(0xFF00BFFF),
+                                ? const Color(0xFF4CAF50)
+                                : const Color(0xFFFFC107),
                           ),
                         ),
                       ),

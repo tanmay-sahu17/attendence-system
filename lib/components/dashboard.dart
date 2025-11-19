@@ -104,7 +104,7 @@ class _DashboardState extends State<Dashboard> {
               icon: Icons.videocam,
               title: 'Record Attendance',
               description: 'Start camera to capture students',
-              gradientColors: const [Color(0xFF1A4FB8), Color(0xFF2563EB)],
+              gradientColors: const [Color(0xFF0A192F), Color(0xFF1E3A5F)],
               onTap: () => context.push('/camera'),
             ),
             
@@ -263,8 +263,8 @@ class _TipsCarouselState extends State<_TipsCarousel> {
                 width: _currentIndex == index ? 24 : 8,
                 decoration: BoxDecoration(
                   color: _currentIndex == index
-                      ? const Color(0xFF1A4FB8)
-                      : const Color(0xFF1A4FB8).withOpacity(0.3),
+                      ? const Color(0xFF0A192F)
+                      : const Color(0xFFBDBDBD),
                   borderRadius: BorderRadius.circular(4),
                 ),
               );
@@ -293,13 +293,13 @@ class _CarouselTipItem extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF28A745).withOpacity(0.1),
+            color: const Color(0xFF4CAF50).withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             icon,
             size: 28,
-            color: const Color(0xFF28A745),
+            color: const Color(0xFF4CAF50),
           ),
         ),
         const SizedBox(width: 16),

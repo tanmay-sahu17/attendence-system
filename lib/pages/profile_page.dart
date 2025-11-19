@@ -8,10 +8,10 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB),
+      backgroundColor: const Color(0xFFF0F4F8),
       appBar: const TopBar(),
       body: Container(
-        color: const Color(0xFFF7F9FB),
+        color: const Color(0xFFF0F4F8),
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -36,11 +36,11 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundColor: const Color(0xFF1A4FB8).withOpacity(0.1),
+                        backgroundColor: const Color(0xFF0A192F).withOpacity(0.1),
                         child: const Icon(
                           Icons.person,
                           size: 50,
-                          color: Color(0xFF1A4FB8),
+                          color: Color(0xFF0A192F),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -92,7 +92,7 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.edit, color: Color(0xFF1A4FB8)),
+                      leading: const Icon(Icons.edit, color: Color(0xFF0A192F)),
                       title: const Text(
                         'Edit Profile',
                         style: TextStyle(
@@ -105,7 +105,7 @@ class ProfilePage extends StatelessWidget {
                     ),
                     const Divider(height: 1, color: Color(0xFFD9DCE3)),
                     ListTile(
-                      leading: const Icon(Icons.lock, color: Color(0xFF1A4FB8)),
+                      leading: const Icon(Icons.lock, color: Color(0xFF0A192F)),
                       title: const Text(
                         'Change Password',
                         style: TextStyle(
@@ -118,7 +118,7 @@ class ProfilePage extends StatelessWidget {
                     ),
                     const Divider(height: 1, color: Color(0xFFD9DCE3)),
                     ListTile(
-                      leading: const Icon(Icons.school, color: Color(0xFF1A4FB8)),
+                      leading: const Icon(Icons.school, color: Color(0xFF0A192F)),
                       title: const Text(
                         'Manage Classes',
                         style: TextStyle(
@@ -186,7 +186,7 @@ class _StatItem extends StatelessWidget {
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1A4FB8),
+            color: Color(0xFF0A192F),
           ),
         ),
         const SizedBox(height: 4),

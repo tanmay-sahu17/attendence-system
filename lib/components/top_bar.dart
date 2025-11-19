@@ -13,7 +13,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
     final canPop = currentRoute != '/';
 
     return AppBar(
-      backgroundColor: const Color(0xFF1A4FB8),
+      backgroundColor: const Color(0xFF0A192F),
       foregroundColor: Colors.white,
       elevation: 2,
       leading: canPop

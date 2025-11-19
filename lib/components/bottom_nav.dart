@@ -79,7 +79,7 @@ class _NavItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(0xFF1A4FB8).withOpacity(0.1)
+              ? const Color(0xFF0A192F).withOpacity(0.08)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -90,7 +90,7 @@ class _NavItem extends StatelessWidget {
               icon,
               size: 20,
               color: isActive
-                  ? const Color(0xFF1A4FB8)
+                  ? const Color(0xFF0A192F)
                   : const Color(0xFF7D8897),
             ),
             const SizedBox(height: 4),
@@ -100,7 +100,7 @@ class _NavItem extends StatelessWidget {
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: isActive
-                    ? const Color(0xFF1A4FB8)
+                    ? const Color(0xFF0A192F)
                     : const Color(0xFF7D8897),
               ),
             ),

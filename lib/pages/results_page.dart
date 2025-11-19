@@ -38,7 +38,7 @@ class _ResultsPageState extends State<ResultsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A4FB8),
+        backgroundColor: const Color(0xFF0A192F),
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -54,7 +54,7 @@ class _ResultsPageState extends State<ResultsPage> {
         ),
       ),
       body: Container(
-        color: const Color(0xFFF7F9FB),
+        color: const Color(0xFFF0F4F8),
         child: Column(
           children: [
           // Summary Card
@@ -100,7 +100,7 @@ class _ResultsPageState extends State<ResultsPage> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1A4FB8).withOpacity(0.1),
+                        color: const Color(0xFFFFC107).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -108,7 +108,7 @@ class _ResultsPageState extends State<ResultsPage> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A4FB8),
+                          color: Color(0xFFFFC107),
                         ),
                       ),
                     ),
@@ -122,7 +122,7 @@ class _ResultsPageState extends State<ResultsPage> {
                       icon: Icons.check_circle_outline,
                       label: 'Present',
                       value: '$presentCount',
-                      color: const Color(0xFF28A745),
+                      color: const Color(0xFF4CAF50),
                     ),
                     Container(
                       width: 1,
@@ -144,7 +144,7 @@ class _ResultsPageState extends State<ResultsPage> {
                       icon: Icons.percent,
                       label: 'Rate',
                       value: '$percentage%',
-                      color: const Color(0xFF1A4FB8),
+                      color: const Color(0xFF0A192F),
                     ),
                   ],
                 ),
@@ -169,15 +169,15 @@ class _ResultsPageState extends State<ResultsPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A4FB8).withOpacity(0.1),
+                    color: const Color(0xFF0A192F).withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '$totalCount',
                     style: const TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A4FB8),
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0A192F),
                     ),
                   ),
                 ),
@@ -266,16 +266,14 @@ class _ResultsPageState extends State<ResultsPage> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isPresent
-                                  ? [const Color(0xFF28A745), const Color(0xFF1E7E34)]
-                                  : [const Color(0xFFE84545), const Color(0xFFD63031)],
-                            ),
+                            color: isPresent
+                                ? const Color(0xFF4CAF50)
+                                : const Color(0xFFE84545),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
                                 color: (isPresent
-                                    ? const Color(0xFF28A745)
+                                    ? const Color(0xFF4CAF50)
                                     : const Color(0xFFE84545)).withOpacity(0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
