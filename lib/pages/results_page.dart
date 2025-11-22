@@ -10,6 +10,7 @@ class ResultsPage extends StatefulWidget {
 
 class _ResultsPageState extends State<ResultsPage> {
   late List<Map<String, dynamic>> students;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -30,410 +31,360 @@ class _ResultsPageState extends State<ResultsPage> {
     });
   }
 
+  List<Map<String, dynamic>> _getFilteredStudents() {
+    if (_searchQuery.isEmpty) {
+      return students;
+    }
+    return students.where((student) {
+      final name = student['name'].toString().toLowerCase();
+      final rollNo = student['rollNo'].toString().toLowerCase();
+      final query = _searchQuery.toLowerCase();
+      return name.contains(query) || rollNo.contains(query);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final presentCount = students.where((s) => s['status'] == 'Present').length;
-    final totalCount = students.length;
-    final percentage = ((presentCount / totalCount) * 100).round();
+    final filteredStudents = _getFilteredStudents();
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A192F),
-        foregroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
-        ),
         title: const Text(
           'Attendance Results',
           style: TextStyle(
+            fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
         ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.go('/'),
+        ),
       ),
       body: Container(
-        color: const Color(0xFFF0F4F8),
+        color: Colors.white,
         child: Column(
           children: [
-          // Summary Card
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+            // Header Section
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.grey[300]!,
+                    width: 1,
+                  ),
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 16,
-                          color: Color(0xFF7D8897),
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'Nov 15, 2025',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF7D8897),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFC107).withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
                         'Lecture #5',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFFFFC107),
+                          color: Color(0xFF2B3544),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _SummaryItem(
-                      icon: Icons.check_circle_outline,
-                      label: 'Present',
-                      value: '$presentCount',
-                      color: const Color(0xFF4CAF50),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 50,
-                      color: const Color(0xFFD9DCE3),
-                    ),
-                    _SummaryItem(
-                      icon: Icons.cancel_outlined,
-                      label: 'Absent',
-                      value: '${totalCount - presentCount}',
-                      color: const Color(0xFFE84545),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 50,
-                      color: const Color(0xFFD9DCE3),
-                    ),
-                    _SummaryItem(
-                      icon: Icons.percent,
-                      label: 'Rate',
-                      value: '$percentage%',
-                      color: const Color(0xFF0A192F),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Section Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                const Text(
-                  'Student Details',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2B3544),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A192F).withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '$totalCount',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0A192F),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Students List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: students.length,
-              itemBuilder: (context, index) {
-                final student = students[index];
-                final isPresent = student['status'] == 'Present';
-                
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF9C4),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '${filteredStudents.length} students',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[700],
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  child: Row(
-                    children: [
-                      // Avatar
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF7F9FB),
-                          borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 12),
+                  // Search Box
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search student...',
+                        hintStyle: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 14,
                         ),
-                        child: Center(
-                          child: Text(
-                            student['rollNo'] as String,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF2B3544),
-                            ),
-                          ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: Colors.grey[600],
+                          size: 20,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      // Student Info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Table Section
+            Expanded(
+              child: SingleChildScrollView(
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
+                    children: [
+                      // Table Header
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          border: Border(
+                            bottom: BorderSide(color: Colors.grey[300]!, width: 1),
+                          ),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              student['name'] as String,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF2B3544),
-                              ),
-                            ),
-                            if (isPresent) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                '${student['confidence']}% confidence',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF7D8897),
-                                ),
-                              ),
-                            ],
+                            _TableHeaderCell('Roll No', width: 80),
+                            _TableHeaderCell('Name', flex: 2),
+                            _TableHeaderCell('Status', width: 100),
+                            _TableHeaderCell('Confidence', width: 100),
                           ],
                         ),
                       ),
-                      // Tap Chip to Change Status
-                      InkWell(
-                        onTap: () => _toggleAttendance(index),
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isPresent
-                                ? const Color(0xFF4CAF50)
-                                : const Color(0xFFE84545),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: (isPresent
-                                    ? const Color(0xFF4CAF50)
-                                    : const Color(0xFFE84545)).withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isPresent ? Icons.check_circle : Icons.cancel,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                isPresent ? 'Present' : 'Absent',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                      // Table Rows
+                      ...filteredStudents.asMap().entries.map((entry) {
+                        final index = students.indexOf(entry.value);
+                        final student = entry.value;
+                        final isPresent = student['status'] == 'Present';
+                        final rowIndex = entry.key;
+                        
+                        return InkWell(
+                          onTap: () => _toggleAttendance(index),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: rowIndex % 2 == 0 ? Colors.white : Colors.grey[50],
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.grey[200]!,
+                                  width: 1,
                                 ),
                               ),
-                            ],
+                            ),
+                            child: Row(
+                              children: [
+                                _TableCell(student['rollNo'], width: 80),
+                                _TableCell(student['name'], flex: 2),
+                                _StatusCell(
+                                  student['status'],
+                                  width: 100,
+                                  onTap: () => _toggleAttendance(index),
+                                ),
+                                _TableCell(
+                                  isPresent ? '${student['confidence']}%' : '-',
+                                  width: 100,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      }).toList(),
                     ],
                   ),
-                );
-              },
+                ),
+              ),
             ),
-          ),
 
-          // Action Buttons
-          SafeArea(
-            child: Container(
+            // Action Buttons
+            Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
+                border: Border(
+                  top: BorderSide(color: Colors.grey[300]!, width: 1),
+                ),
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF1A4FB8).withOpacity(0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.download, size: 18),
-                        label: const Text('Export'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF1A4FB8),
-                          backgroundColor: Colors.white,
-                          side: BorderSide.none,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
+                    child: OutlinedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.download, size: 18),
+                      label: const Text('Export'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF0A192F),
+                        side: BorderSide(color: Colors.grey[400]!),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF1A4FB8).withOpacity(0.25),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          context.go('/');
-                        },
-                        icon: const Icon(Icons.check, size: 18),
-                        label: const Text('Done'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF1A4FB8),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
+                    child: ElevatedButton.icon(
+                      onPressed: () => context.go('/'),
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text('Done'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0A192F),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
                         ),
+                        elevation: 0,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
   }
 }
 
-class _SummaryItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
+class _TableHeaderCell extends StatelessWidget {
+  final String text;
+  final double? width;
+  final int? flex;
 
-  const _SummaryItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+  const _TableHeaderCell(this.text, {this.width, this.flex});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: color,
-          size: 28,
+    Widget cell = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF2B3544),
         ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF7D8897),
-            fontSize: 12,
-          ),
-        ),
-      ],
+      ),
     );
+
+    if (width != null) {
+      return SizedBox(width: width, child: cell);
+    } else if (flex != null) {
+      return Expanded(flex: flex!, child: cell);
+    }
+    return cell;
+  }
+}
+
+class _TableCell extends StatelessWidget {
+  final String text;
+  final double? width;
+  final int? flex;
+
+  const _TableCell(this.text, {this.width, this.flex});
+
+  @override
+  Widget build(BuildContext context) {
+    Widget cell = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 13,
+          color: Color(0xFF2B3544),
+        ),
+      ),
+    );
+
+    if (width != null) {
+      return SizedBox(width: width, child: cell);
+    } else if (flex != null) {
+      return Expanded(flex: flex!, child: cell);
+    }
+    return cell;
+  }
+}
+
+class _StatusCell extends StatelessWidget {
+  final String status;
+  final double? width;
+  final VoidCallback onTap;
+
+  const _StatusCell(this.status, {this.width, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    Color statusColor;
+    Color bgColor;
+    
+    switch (status) {
+      case 'Present':
+        statusColor = const Color(0xFF4CAF50);
+        bgColor = const Color(0xFFE8F5E9);
+        break;
+      case 'Absent':
+        statusColor = const Color(0xFFE84545);
+        bgColor = const Color(0xFFFFEBEE);
+        break;
+      default:
+        statusColor = Colors.grey[600]!;
+        bgColor = Colors.grey[200]!;
+    }
+
+    Widget cell = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            status,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: statusColor,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (width != null) {
+      return SizedBox(width: width, child: cell);
+    }
+    return cell;
   }
 }

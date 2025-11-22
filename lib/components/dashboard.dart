@@ -105,7 +105,17 @@ class _DashboardState extends State<Dashboard> {
               title: 'Record Attendance',
               description: 'Start camera to capture students',
               gradientColors: const [Color(0xFF0A192F), Color(0xFF1E3A5F)],
-              onTap: () {}, // Navigation disabled
+              onTap: () => context.push('/camera'),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            _ActionCard(
+              icon: Icons.people_alt,
+              title: 'Student Records',
+              description: 'View individual student attendance',
+              gradientColors: const [Color(0xFF4CAF50), Color(0xFF45A049)],
+              onTap: () => context.push('/show-records'),
             ),
             
             const SizedBox(height: 24),

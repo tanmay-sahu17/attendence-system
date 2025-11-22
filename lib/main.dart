@@ -6,6 +6,7 @@ import 'pages/camera_page.dart';
 import 'pages/processing_page.dart';
 import 'pages/results_page.dart';
 import 'pages/records_page.dart';
+import 'pages/show_records_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/upload_page.dart';
 
@@ -61,6 +62,10 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/records',
       builder: (context, state) => const RecordsPage(),
+    ),
+    GoRoute(
+      path: '/show-records',
+      builder: (context, state) => const ShowRecordsPage(),
     ),
     GoRoute(
       path: '/profile',

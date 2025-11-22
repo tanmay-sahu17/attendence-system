@@ -26,10 +26,9 @@ class _CameraPageState extends State<CameraPage> {
   final _subjectNameController = TextEditingController();
   final _lectureNumberController = TextEditingController();
 
-  // Photo capture
-  List<String> _capturedPhotos = [];
-  final int _requiredPhotos = 10;
-  bool _isCapturing = false;
+  // Video recording
+  String? _recordedVideoPath;
+  bool _isRecording = false;
 
   @override
   void initState() {
@@ -61,7 +60,7 @@ class _CameraPageState extends State<CameraPage> {
       _controller = CameraController(
         cameras.first,
         ResolutionPreset.medium, // Changed from high to medium to reduce buffer usage
-        enableAudio: false,
+        enableAudio: true, // Enable audio for video recording
         imageFormatGroup: ImageFormatGroup.jpeg, // Specify JPEG format
       );
 
@@ -96,58 +95,69 @@ class _CameraPageState extends State<CameraPage> {
     super.deactivate();
   }
 
-  Future<void> _capturePhoto() async {
-    if (_controller == null || !_controller!.value.isInitialized || _isCapturing) return;
-    if (_capturedPhotos.length >= _requiredPhotos) {
-      _showSubmitDialog();
-      return;
-    }
+  Future<void> _toggleVideoRecording() async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
 
-    setState(() {
-      _isCapturing = true;
-    });
-
-    try {
-      // Add small delay to allow camera buffer to clear
-      await Future.delayed(const Duration(milliseconds: 100));
-      
-      final directory = await getTemporaryDirectory();
-      final path = '${directory.path}/attendance_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      
-      final image = await _controller!.takePicture();
-      
-      // Copy file and add small delay before next capture
-      await File(image.path).copy(path);
-      
-      // Delete original temp file to free memory
+    if (_isRecording) {
+      // Stop recording
       try {
-        await File(image.path).delete();
-      } catch (e) {
-        debugPrint('Error deleting temp file: $e');
-      }
-      
-      setState(() {
-        _capturedPhotos.add(path);
-        _isCapturing = false;
-      });
-
-      if (_capturedPhotos.length >= _requiredPhotos) {
-        // Auto-show submit dialog when all 10 photos are captured
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            _showSubmitDialog();
-          }
+        final XFile videoFile = await _controller!.stopVideoRecording();
+        
+        final directory = await getTemporaryDirectory();
+        final path = '${directory.path}/attendance_${DateTime.now().millisecondsSinceEpoch}.mp4';
+        
+        // Copy file to permanent location
+        await File(videoFile.path).copy(path);
+        
+        // Delete original temp file
+        try {
+          await File(videoFile.path).delete();
+        } catch (e) {
+          debugPrint('Error deleting temp file: $e');
+        }
+        
+        setState(() {
+          _recordedVideoPath = path;
+          _isRecording = false;
         });
+        
+        // Show submit dialog
+        _showSubmitDialog();
+      } catch (e) {
+        debugPrint('Error stopping video: $e');
+        setState(() {
+          _isRecording = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error stopping video: $e')),
+          );
+        }
       }
-    } catch (e) {
-      debugPrint('Error capturing photo: $e');
-      setState(() {
-        _isCapturing = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error capturing photo: $e')),
-        );
+    } else {
+      // Start recording
+      try {
+        setState(() {
+          _isRecording = true;
+        });
+        
+        // Check if already recording
+        if (_controller!.value.isRecordingVideo) {
+          await _controller!.stopVideoRecording();
+        }
+        
+        // Start recording video
+        await _controller!.startVideoRecording();
+      } catch (e) {
+        debugPrint('Error starting video: $e');
+        setState(() {
+          _isRecording = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error starting video: $e')),
+          );
+        }
       }
     }
   }
@@ -158,14 +168,14 @@ class _CameraPageState extends State<CameraPage> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
-          'All Photos Captured!',
+          'Video Recorded!',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Color(0xFF2B3544),
           ),
         ),
-        content: Text(
-          'You have captured all $_requiredPhotos photos. Ready to submit for processing?',
+        content: const Text(
+          'Your attendance video has been recorded. Ready to submit for processing?',
           style: const TextStyle(color: Color(0xFF7D8897)),
         ),
         actions: [
@@ -191,7 +201,43 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   void _attemptSubmit() {
-    final remaining = _requiredPhotos - _capturedPhotos.length;
+    if (_recordedVideoPath == null) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.warning, color: Color(0xFFFFC107)),
+              SizedBox(width: 8),
+              Text(
+                'No Video Recorded',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2B3544),
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Please record a video before submitting for processing.',
+            style: TextStyle(color: Color(0xFF7D8897)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK', style: TextStyle(color: Color(0xFF0A192F))),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    context.push('/processing');
+  }
+
+  void _attemptSubmitOld() {
+    final remaining = 0;
     if (remaining > 0) {
       showDialog(
         context: context,
@@ -211,7 +257,7 @@ class _CameraPageState extends State<CameraPage> {
             ],
           ),
           content: Text(
-            'Please capture the remaining $remaining photo${remaining > 1 ? 's' : ''} before submitting for processing.',
+            'Please record the remaining $remaining video${remaining > 1 ? 's' : ''} before submitting for processing.',
             style: const TextStyle(color: Color(0xFF7D8897)),
           ),
           actions: [
@@ -618,8 +664,8 @@ class _CameraPageState extends State<CameraPage> {
                     onPressed: () {
                       _proceedToCamera();
                     },
-                    icon: const Icon(Icons.camera_alt, size: 20),
-                    label: const Text('Capture Photos'),
+                    icon: const Icon(Icons.videocam, size: 20),
+                    label: const Text('Record Videos'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF1A4FB8),
                       side: const BorderSide(color: Color(0xFF1A4FB8), width: 2),
@@ -645,7 +691,7 @@ class _CameraPageState extends State<CameraPage> {
                       context.push('/upload');
                     },
                     icon: const Icon(Icons.upload, size: 20),
-                    label: const Text('Upload Photos'),
+                    label: const Text('Upload Videos'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0A192F),
                       foregroundColor: Colors.white,
@@ -696,7 +742,7 @@ class _CameraPageState extends State<CameraPage> {
                 ),
         ),
 
-        // Photo Progress Indicator at Top
+        // Video Recording Indicator at Top
         Positioned(
           top: 60,
           left: 0,
@@ -709,7 +755,9 @@ class _CameraPageState extends State<CameraPage> {
               ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: _capturedPhotos.length >= _requiredPhotos
+                  colors: _isRecording
+                      ? [const Color(0xFFE84545), const Color(0xFFC62828)]
+                      : _recordedVideoPath != null
                       ? [const Color(0xFF4CAF50), const Color(0xFF388E3C)]
                       : [const Color(0xFF0A192F), const Color(0xFF1E3A5F)],
                 ),
@@ -725,15 +773,21 @@ class _CameraPageState extends State<CameraPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _capturedPhotos.length >= _requiredPhotos
+                    _isRecording
+                        ? Icons.fiber_manual_record
+                        : _recordedVideoPath != null
                         ? Icons.check_circle
-                        : Icons.camera,
+                        : Icons.videocam,
                     color: Colors.white,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${_capturedPhotos.length} / $_requiredPhotos',
+                    _isRecording
+                        ? 'Recording...'
+                        : _recordedVideoPath != null
+                        ? 'Video Recorded'
+                        : 'Ready to Record',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -743,23 +797,6 @@ class _CameraPageState extends State<CameraPage> {
                 ],
               ),
             ),
-          ),
-        ),
-
-        // Progress Bar at Bottom
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: LinearProgressIndicator(
-            value: _capturedPhotos.length / _requiredPhotos,
-            backgroundColor: Colors.black.withOpacity(0.3),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              _capturedPhotos.length >= _requiredPhotos
-                  ? const Color(0xFF4CAF50)
-                  : const Color(0xFFFFC107),
-            ),
-            minHeight: 6,
           ),
         ),
 
@@ -815,9 +852,11 @@ class _CameraPageState extends State<CameraPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _capturedPhotos.length >= _requiredPhotos
-                      ? 'All photos captured! Tap Submit to proceed'
-                      : 'Tap to capture photo (${_capturedPhotos.length}/$_requiredPhotos)',
+                  _isRecording
+                      ? 'Tap to stop recording'
+                      : _recordedVideoPath != null
+                      ? 'Video recorded! Tap Submit to proceed'
+                      : 'Tap to start recording video',
                   style: const TextStyle(
                     fontSize: 14,
                     color: Colors.white,
@@ -835,15 +874,17 @@ class _CameraPageState extends State<CameraPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Capture Photo Button
+                    // Record/Stop Video Button
                     GestureDetector(
-                      onTap: _isCapturing ? null : _capturePhoto,
+                      onTap: _toggleVideoRecording,
                       child: Container(
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: _capturedPhotos.length >= _requiredPhotos
+                            colors: _isRecording
+                                ? [const Color(0xFFE84545), const Color(0xFFC62828)]
+                                : _recordedVideoPath != null
                                 ? [const Color(0xFF4CAF50), const Color(0xFF388E3C)]
                                 : [const Color(0xFF0A192F), const Color(0xFF1E3A5F)],
                           ),
@@ -854,7 +895,9 @@ class _CameraPageState extends State<CameraPage> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: (_capturedPhotos.length >= _requiredPhotos
+                              color: (_isRecording
+                                      ? const Color(0xFFE84545)
+                                      : _recordedVideoPath != null
                                       ? const Color(0xFF4CAF50)
                                       : const Color(0xFF0A192F))
                                   .withOpacity(0.5),
@@ -864,22 +907,19 @@ class _CameraPageState extends State<CameraPage> {
                           ],
                         ),
                         child: Center(
-                          child: _isCapturing
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
-                                )
-                              : Icon(
-                                  _capturedPhotos.length >= _requiredPhotos
-                                      ? Icons.check_circle
-                                      : Icons.camera,
+                          child: Icon(
+                            _isRecording
+                                ? Icons.stop
+                                : _recordedVideoPath != null
+                                ? Icons.check_circle
+                                : Icons.videocam,
                                   size: 40,
                                   color: Colors.white,
                                 ),
                         ),
                       ),
                     ),
-                    if (_capturedPhotos.isNotEmpty) ...[
+                    if (_recordedVideoPath != null) ...[
                       const SizedBox(width: 24),
                       // Submit Button
                       GestureDetector(
@@ -887,9 +927,7 @@ class _CameraPageState extends State<CameraPage> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                           decoration: BoxDecoration(
-                            color: _capturedPhotos.length >= _requiredPhotos
-                                ? const Color(0xFFFFC107)
-                                : const Color(0xFF7D8897).withOpacity(0.8),
+                            color: const Color(0xFFFFC107),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: Colors.white.withOpacity(0.3),
