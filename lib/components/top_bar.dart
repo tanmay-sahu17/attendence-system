@@ -23,21 +23,24 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00BFFF).withOpacity(0.3),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const Icon(
-                    Icons.psychology,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ],
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/logo.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00BFFF).withOpacity(0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.psychology,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
       title: Column(
@@ -45,7 +48,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'FaceMark AI',
+            'UPASTHIT',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 20,

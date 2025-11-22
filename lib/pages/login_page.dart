@@ -44,62 +44,37 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Logo and Branding Section
+                  // Logo Section
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF0A192F),
-                          Color(0xFF1E3A5F),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white,
+                      shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0A192F).withOpacity(0.3),
+                          color: const Color(0xFF0A192F).withOpacity(0.2),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.psychology,
-                            size: 48,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'FaceMark AI',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Smart Attendance System',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                    padding: const EdgeInsets.all(8),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/logo.png',
+                        width: 104,
+                        height: 104,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          print('Error loading image: $error');
+                          return const Icon(
+                            Icons.image,
+                            size: 60,
+                            color: Color(0xFF0A192F),
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -383,7 +358,7 @@ class _LoginPageState extends State<LoginPage> {
                   
                   // Footer Text
                   Text(
-                    '© 2025 FaceMark AI. All rights reserved.',
+                    '© 2025 UPASTHIT. All rights reserved.',
                     style: TextStyle(
                       fontSize: 12,
                       color: const Color(0xFF7D8897).withOpacity(0.8),

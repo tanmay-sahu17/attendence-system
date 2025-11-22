@@ -59,9 +59,10 @@ class _CameraPageState extends State<CameraPage> {
 
       _controller = CameraController(
         cameras.first,
-        ResolutionPreset.medium, // Changed from high to medium to reduce buffer usage
+        ResolutionPreset.high, // Use high resolution for better quality
         enableAudio: true, // Enable audio for video recording
         imageFormatGroup: ImageFormatGroup.jpeg, // Specify JPEG format
+        fps: 60, // Set frame rate to 60 FPS
       );
 
       await _controller!.initialize();

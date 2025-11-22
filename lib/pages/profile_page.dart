@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../components/top_bar.dart';
 import '../components/bottom_nav.dart';
 
@@ -9,7 +10,22 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F8),
-      appBar: const TopBar(),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0A192F),
+        elevation: 0,
+        title: const Text(
+          'Profile',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+      ),
       body: Container(
         color: const Color(0xFFF0F4F8),
         child: SingleChildScrollView(
@@ -34,16 +50,6 @@ class ProfilePage extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: const Color(0xFF0A192F).withOpacity(0.1),
-                        child: const Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Color(0xFF0A192F),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
                       const Text(
                         'Teacher Name',
                         style: TextStyle(
@@ -101,7 +107,52 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ),
                       trailing: const Icon(Icons.chevron_right, color: Color(0xFF7D8897)),
-                      onTap: () {},
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Edit Profile'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(
+                                  decoration: const InputDecoration(
+                                    labelText: 'Name',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  controller: TextEditingController(text: 'Teacher Name'),
+                                ),
+                                const SizedBox(height: 16),
+                                TextField(
+                                  decoration: const InputDecoration(
+                                    labelText: 'Email',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  controller: TextEditingController(text: 'teacher@school.com'),
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Profile updated successfully!')),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0A192F),
+                                ),
+                                child: const Text('Save'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const Divider(height: 1, color: Color(0xFFD9DCE3)),
                     ListTile(
@@ -114,20 +165,60 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ),
                       trailing: const Icon(Icons.chevron_right, color: Color(0xFF7D8897)),
-                      onTap: () {},
-                    ),
-                    const Divider(height: 1, color: Color(0xFFD9DCE3)),
-                    ListTile(
-                      leading: const Icon(Icons.school, color: Color(0xFF0A192F)),
-                      title: const Text(
-                        'Manage Classes',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF2B3544),
-                        ),
-                      ),
-                      trailing: const Icon(Icons.chevron_right, color: Color(0xFF7D8897)),
-                      onTap: () {},
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Change Password'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(
+                                  decoration: const InputDecoration(
+                                    labelText: 'Current Password',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  obscureText: true,
+                                ),
+                                const SizedBox(height: 16),
+                                TextField(
+                                  decoration: const InputDecoration(
+                                    labelText: 'New Password',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  obscureText: true,
+                                ),
+                                const SizedBox(height: 16),
+                                TextField(
+                                  decoration: const InputDecoration(
+                                    labelText: 'Confirm New Password',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  obscureText: true,
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Password changed successfully!')),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0A192F),
+                                ),
+                                child: const Text('Change'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -138,7 +229,31 @@ class ProfilePage extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Logout'),
+                        content: const Text('Are you sure you want to logout?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              context.go('/login');
+                            },
+                            child: const Text(
+                              'Logout',
+                              style: TextStyle(color: Color(0xFFE84545)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFE84545),
                     side: const BorderSide(
