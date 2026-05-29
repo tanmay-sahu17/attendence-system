@@ -154,4 +154,4 @@ This project is part of the VisionMark attendance system.
 
 ## Support
 
-For issues and questions, please contact the development team.
+For issues and questions, please contact the development team...
