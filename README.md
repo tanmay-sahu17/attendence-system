@@ -23,7 +23,7 @@ A native mobile application built with Flutter for AI-powered facial recognition
 1. **Navigate to the Flutter app directory:**
    ```bash
    cd flutter_app
-   ```
+   ```...
 
 2. **Install dependencies:**
    ```bash
