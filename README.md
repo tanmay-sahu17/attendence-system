@@ -34,7 +34,7 @@ A native mobile application built with Flutter for AI-powered facial recognition
    
    For Android:
    ```bash
-   flutter run
+   flutter runn
    ```
    
    For iOS (macOS only):
